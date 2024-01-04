@@ -1,0 +1,17 @@
+---
+AccessModifierOffset: -4
+AlignAfterOpenBracket: Align
+AlignEscapedNewlines: DontAlign
+AlignTrailingComments: true
+BreakBeforeBinaryOperators: All
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+BreakConstructorInitializers: BeforeComma
+ColumnLimit: 104
+FixNamespaceComments: true
+IndentWidth: 4
+SortIncludes: false
+
+...
