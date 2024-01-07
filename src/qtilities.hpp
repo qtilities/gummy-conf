@@ -49,7 +49,7 @@ static void createAutostartFile()
 {
     QDir configDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
     QString appName = QApplication::applicationName();
-    QString filePath = configDir.filePath("autostart/" + appName + ".desktop");
+    QString filePath = configDir.filePath("autostart/" + QStringLiteral(PROJECT_APPSTREAM_ID) + ".desktop");
     QFile file(filePath);
 
     if (file.exists() || !file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -61,12 +61,14 @@ static void createAutostartFile()
     out << "Type=Application\n";
     out << "Exec=" + appName + "\n";
     out << "Terminal=false\n";
+    out << "Icon=" << PROJECT_APPSTREAM_ID << '\n';
 }
 
 static void deleteAutostartFile()
 {
     QDir configDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
-    QString filePath(configDir.filePath("autostart/" + QApplication::applicationName() + ".desktop"));
+//  QString filePath(configDir.filePath("autostart/" + QApplication::applicationName() + ".desktop"));
+    QString filePath(configDir.filePath("autostart/" + QStringLiteral(PROJECT_APPSTREAM_ID) + ".desktop"));
     QFile file(filePath);
 
     if (!file.exists())

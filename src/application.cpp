@@ -90,7 +90,8 @@ void Qtilities::Application::initUi()
     settings_.load();
 
     QString icoLocalPath
-        = QCoreApplication::applicationDirPath() + '/' + QStringLiteral(PROJECT_ICON_NAME);
+        = QCoreApplication::applicationDirPath() + '/'
+        + QStringLiteral(PROJECT_APPSTREAM_ID) + '.' + QStringLiteral(PROJECT_ICON_FORMAT);
     QString icoSysPath = QStringLiteral(PROJECT_ICON_SYSTEM_PATH);
 
     // Try first to find the app icon in the current/build directory
