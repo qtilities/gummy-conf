@@ -1,7 +1,7 @@
 /*
     MIT License
 
-    Copyright (c) 2021-2024 Andrea Zanellato <redtid3@gmail.com>
+    Copyright (c) 2024 Andrea Zanellato <redtid3@gmail.com>
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to
@@ -21,23 +21,16 @@
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
     IN THE SOFTWARE.
 */
-#pragma once
+#include <QString>
+#include <memory>
 
-#include <QDialog>
-
-namespace Qtilities {
-namespace Ui {
-class DialogAbout;
-}
-class DialogAbout : public QDialog
-{
-    Q_OBJECT
-
+class GummyD {
 public:
-    explicit DialogAbout(QWidget* parent = nullptr);
-    ~DialogAbout();
+    GummyD();
+    ~GummyD();
 
-private:
-    Ui::DialogAbout* ui_;
+    bool is_running() const;
+    void start();
+    void stop();
+    void send_command(const QStringList& args);
 };
-} // namespace Qtilities

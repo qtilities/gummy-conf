@@ -1,7 +1,7 @@
 /*
     MIT License
 
-    Copyright (c) 2021-2024 Andrea Zanellato <redtid3@gmail.com>
+    Copyright (c) 2023-2024 Andrea Zanellato <redtid3@gmail.com>
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to
@@ -23,21 +23,33 @@
 */
 #pragma once
 
-#include <QDialog>
+#include <QObject>
+
+class QAction;
+class QSystemTrayIcon;
+class QMenu;
 
 namespace Qtilities {
-namespace Ui {
-class DialogAbout;
-}
-class DialogAbout : public QDialog
+
+class SystemTrayIcon : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit DialogAbout(QWidget* parent = nullptr);
-    ~DialogAbout();
+    explicit SystemTrayIcon(const QIcon &icon, QObject *parent);
+    explicit SystemTrayIcon(QObject *parent);
+
+    QSystemTrayIcon* get()  const { return trayIcon_; }
+    QMenu*           menu() const { return trayMenu_; }
+
+    void setIcon(const QIcon &);
+    void setWidget(QWidget *);
 
 private:
-    Ui::DialogAbout* ui_;
+    void init();
+
+    QSystemTrayIcon *trayIcon_;
+    QMenu *trayMenu_;
+    QAction *actAbout_, *actPrefs_, *actQuit_;
 };
 } // namespace Qtilities

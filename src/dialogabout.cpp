@@ -1,7 +1,7 @@
 /*
     MIT License
 
-    Copyright (c) 2021-2023 Andrea Zanellato <redtid3@gmail.com>
+    Copyright (c) 2021-2024 Andrea Zanellato <redtid3@gmail.com>
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to
@@ -31,12 +31,12 @@
 
 Qtilities::DialogAbout::DialogAbout(QWidget *parent)
     : QDialog(parent)
-    , ui(new Qtilities::Ui::DialogAbout)
+    , ui_(new Qtilities::Ui::DialogAbout)
 {
-    ui->setupUi(this);
-    ui->tabInfo->setLayout(ui->layTabInfo);
-    ui->tabAuthors->setLayout(ui->layTabAuthors);
-    ui->tabLicense->setLayout(ui->layTabLicense);
+    ui_->setupUi(this);
+    ui_->tabInfo->setLayout(ui_->layTabInfo);
+    ui_->tabTranslators->setLayout(ui_->layTabTranslators);
+    ui_->tabLicense->setLayout(ui_->layTabLicense);
 
     QStringList list = {":/info", ":/authors", ":/license"};
     QStringList texts;
@@ -52,14 +52,14 @@ Qtilities::DialogAbout::DialogAbout(QWidget *parent)
         f.close();
     }
     QString toTranslate = texts.at(0);
-    ui->txtInfo->setMarkdown(toTranslate.replace("__AUTHOR__", tr("Author")));
-    ui->txtAuthors->setMarkdown(texts.at(1));
-    ui->txtLicense->setMarkdown(texts.at(2));
+    ui_->txtInfo->setMarkdown(toTranslate.replace("__AUTHOR__", tr("Author")));
+    ui_->txtTranslators->setMarkdown(texts.at(1));
+    ui_->txtLicense->setMarkdown(texts.at(2));
 
     setWindowIcon(QIcon::fromTheme("help-about", QIcon(":/help-about")));
     setWindowTitle(tr("About"));
 
-    connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &Qtilities::DialogAbout::close);
+    connect(ui_->buttonBox, &QDialogButtonBox::clicked, this, &Qtilities::DialogAbout::close);
 }
 
-Qtilities::DialogAbout::~DialogAbout() { delete ui; }
+Qtilities::DialogAbout::~DialogAbout() { delete ui_; }

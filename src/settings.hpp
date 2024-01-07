@@ -1,7 +1,7 @@
 /*
     MIT License
 
-    Copyright (c) 2021-2023 Andrea Zanellato <redtid3@gmail.com>
+    Copyright (c) 2021-2024 Andrea Zanellato <redtid3@gmail.com>
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to
@@ -26,14 +26,22 @@
 #include <QColor>
 #include <QPoint>
 #include <QSize>
+#include <QTime>
 
 namespace Qtilities {
 
 namespace Default {
-static constexpr QColor backgroundColor = QColor(0x92, 0xd7, 0xff);
-static constexpr QColor foregroundColor = QColor(0x94, 0x00, 0x80);
-static constexpr QPoint position = QPoint(200, 200);
-static constexpr QSize size = QSize(240, 120);
+static constexpr bool   autostart      {false};
+static constexpr int    backlightMin   {35};
+static constexpr int    backlightMax   {100};
+static constexpr int    brightnessMin  {backlightMin};
+static constexpr int    brightnessMax  {backlightMax};
+static constexpr int    temperatureMin {3200};
+static constexpr int    temperatureMax {6500};
+static constexpr QPoint position       {200, 200};
+static constexpr QSize  size           {480, 320};
+static const     QTime  timeStart      {6, 0};
+static const     QTime  timeEnd        {16, 0};
 } // namespace Default
 
 class Settings
@@ -44,22 +52,38 @@ public:
     void load();
     void save();
 
-    QColor backgroundColor() const { return bgColor_; }
-    void setBackgroundColor(const QColor &bgColor) { bgColor_ = bgColor; }
-
-    QColor foregroundColor() const { return fgColor_; }
-    void setForegroundColor(const QColor &fgColor) { fgColor_ = fgColor; }
+    bool autostart() const { return autostart_; }
+    void setAutostart(bool autostart) { autostart_ = autostart; }
 
     QPoint position() const { return position_; }
-    void setPosition(const QPoint &position) { position_ = position; }
+    void setPosition(const QPoint& position) { position_ = position; }
 
     QSize size() const { return size_; }
-    void setSize(const QSize &size) { size_ = size; }
+    void setSize(const QSize& size) { size_ = size; }
+
+    int backlight() const { return backlight_; }
+    void setBacklight(int backlight);
+
+    int brightness() const { return brightness_; }
+    void setBrightness(int brightness);
+
+    int temperature() const { return temperature_; }
+    void setTemperature(int temperature);
+
+    QTime timeStart() const { return timeStart_; }
+    void setTimeStart(QTime time);
+
+    QTime timeEnd() const { return timeEnd_; }
+    void setTimeEnd(QTime time);
 
 private:
-    QColor bgColor_;
-    QColor fgColor_;
+    bool   autostart_;
+    int    backlight_;
+    int    brightness_;
+    int    temperature_;
     QPoint position_;
-    QSize size_;
+    QSize  size_;
+    QTime  timeStart_;
+    QTime  timeEnd_;
 };
 } // namespace Qtilities

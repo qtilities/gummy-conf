@@ -1,7 +1,7 @@
 /*
     MIT License
 
-    Copyright (c) 2021-2023 Andrea Zanellato <redtid3@gmail.com>
+    Copyright (c) 2021-2024 Andrea Zanellato <redtid3@gmail.com>
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to
@@ -22,22 +22,31 @@
     IN THE SOFTWARE.
 */
 #include "application.hpp"
-#include "mainwindow.hpp"
+#include "maindialog.hpp"
 #include "dialogabout.hpp"
-#include "dialogprefs.hpp"
+#include "qtilities.hpp"
+#include "systemtrayicon.hpp"
 
-#include <QKeySequence>
 #include <QLibraryInfo>
 #include <QLocale>
-#include <QShortcut>
+#include <QMenu>
+#include <QProcess>
 
 Qtilities::Application::Application(int argc, char *argv[])
     : QApplication(argc, argv)
+    , trayIcon_(new SystemTrayIcon(this))
+    , gummyd_(new GummyD)
 {
+    // UseHighDpiPixmaps is default from Qt6
+#if QT_VERSION < 0x060000
+    setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+#endif
     setApplicationName(PROJECT_ID);
     setApplicationDisplayName(APPLICATION_NAME);
     setOrganizationName(ORGANIZATION_NAME);
     setOrganizationDomain(ORGANIZATION_DOMAIN);
+
+    setQuitOnLastWindowClosed(false);
 
     initLocale();
     initUi();
@@ -45,30 +54,26 @@ Qtilities::Application::Application(int argc, char *argv[])
 
 void Qtilities::Application::initLocale()
 {
-#if 1
-    QLocale locale = QLocale::system();
-#else
-    QLocale locale(QLocale("it"));
+#if PROJECT_TRANSLATION_TEST_ENABLED
+    QLocale locale(QLocale(PROJECT_TRANSLATION_TEST));
     QLocale::setDefault(locale);
-#endif
-    // Qt translations (buttons and the like)
-    QString translationsPath
-#if QT_VERSION < 0x060000
-        = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
 #else
-        = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
+    QLocale locale = QLocale::system();
 #endif
-    QString translationsFileName = QStringLiteral("qt_") + locale.name();
-
-    if (qtTranslator_.load(translationsFileName, translationsPath))
+    // install the translations built-into Qt itself
+    if (qtTranslator_.load(QStringLiteral("qt_") + locale.name(),
+#if QT_VERSION < 0x060000
+                           QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
+#else
+                           QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+#endif
         installTranslator(&qtTranslator_);
 
     // E.g. "<appname>_en"
-    translationsFileName = QCoreApplication::applicationName().toLower() + '_' + locale.name();
-
+    QString translationsFileName = QCoreApplication::applicationName().toLower() + '_' + locale.name();
     // Try first in the same binary directory, in case we are building,
     // otherwise read from system data
-    translationsPath = QCoreApplication::applicationDirPath();
+    QString translationsPath = QCoreApplication::applicationDirPath();
 
     bool isLoaded = translator_.load(translationsFileName, translationsPath);
     if (!isLoaded) {
@@ -82,10 +87,6 @@ void Qtilities::Application::initLocale()
 
 void Qtilities::Application::initUi()
 {
-    // UseHighDpiPixmaps is default from Qt6
-#if QT_VERSION < 0x060000
-    setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-#endif
     settings_.load();
 
     QString icoLocalPath
@@ -97,32 +98,104 @@ void Qtilities::Application::initUi()
     if (appIcon_.isNull())
         appIcon_ = QIcon(icoSysPath);
 
-    mainWindow_ = new Qtilities::MainWindow;
-    mainWindow_->move(settings_.position());
-    mainWindow_->resize(settings_.size());
-    mainWindow_->setWindowIcon(appIcon_);
-    mainWindow_->setWindowTitle(applicationDisplayName());
-    mainWindow_->show();
+    mainDialog_ = new Qtilities::MainDialog;
+    mainDialog_->move(settings_.position());
+    mainDialog_->resize(settings_.size());
+    mainDialog_->setWindowTitle(applicationDisplayName());
+    mainDialog_->show();
+    mainDialog_->hide();
 
-    connect(this, &QApplication::aboutToQuit, mainWindow_, &QObject::deleteLater);
+    if(settings_.autostart() && !gummyd_->is_running())
+        gummyd_->start();
+
+    if(gummyd_->is_running()) {
+        QIcon icon = QIcon(QSL(":/sun"));
+        trayIcon_->setIcon(icon);
+        mainDialog_->setWindowIcon(icon);
+        mainDialog_->setIsRunning(true);
+    } else {
+        trayIcon_->setIcon(appIcon_);
+        mainDialog_->setWindowIcon(appIcon_);
+        mainDialog_->setIsRunning(false);
+    }
+    trayIcon_->setWidget(mainDialog_);
+
+    QMenu*   trayMenu = trayIcon_->menu();
+    QAction* before   = trayMenu->actions().at(0);
+    actAutoStart_ = new QAction(tr("Auto&start"), trayMenu);
+    actAutoStart_->setCheckable(true);
+    actAutoStart_->setChecked(settings_.autostart());
+    trayMenu->insertAction(before, actAutoStart_);
+
+    connect(this, &QApplication::aboutToQuit, mainDialog_, &QObject::deleteLater);
     connect(this, &QApplication::aboutToQuit, this, [this]() {
-        mainWindow_->saveSettings();
+        mainDialog_->saveSettings();
+        settings_.setAutostart(actAutoStart_->isChecked());
+        settings_.autostart() ? createAutostartFile() : deleteAutostartFile();
         settings_.save();
     });
+    connect(this, &Application::backlightChanged,   this, &Application::onBacklightChanged);
+    connect(this, &Application::brightnessChanged,  this, &Application::onBrightnessChanged);
+    connect(this, &Application::temperatureChanged, this, &Application::onTemperatureChanged);
+    connect(this, &Application::timeStartChanged,   this, &Application::onTimeStartChanged);
+    connect(this, &Application::timeEndChanged,     this, &Application::onTimeEndChanged);
+}
+
+void Qtilities::Application::onBacklightChanged(int backlight)
+{
+    QStringList args;
+    args << "-b" << QString::number(backlight);
+    gummyd_->send_command(args);
+}
+
+void Qtilities::Application::onBrightnessChanged(int brightness)
+{
+    QStringList args;
+    args << "-p" << QString::number(brightness);
+    gummyd_->send_command(args);
+}
+
+void Qtilities::Application::onTemperatureChanged(int temperature)
+{
+    QStringList args;
+    args << "-t" << QString::number(temperature);
+    gummyd_->send_command(args);
+}
+
+void Qtilities::Application::onTimeStartChanged(QTime)
+{
+    // TODO: onTimeStartChanged
+}
+
+void Qtilities::Application::onTimeEndChanged(QTime)
+{
+    // TODO: onTimeEndChanged
+}
+
+void Qtilities::Application::onStartStop()
+{
+    if(gummyd_->is_running()) {
+        gummyd_->stop();
+        trayIcon_->setIcon(appIcon_);
+        mainDialog_->setWindowIcon(appIcon_);
+        mainDialog_->setIsRunning(false);
+    } else {
+        gummyd_->start();
+        trayIcon_->setIcon(QIcon(QSL(":/sun")));
+        mainDialog_->setWindowIcon(QIcon(QSL(":/sun")));
+        mainDialog_->setIsRunning(true);
+    }
 }
 
 void Qtilities::Application::about()
 {
-    DialogAbout about(mainWindow_);
+    DialogAbout about(mainDialog_);
     about.exec();
 }
 
-void Qtilities::Application::preferences()
+QMenu* Qtilities::Application::menu() const
 {
-    DialogPrefs prefs(mainWindow_);
-    connect(&prefs, &DialogPrefs::accepted, mainWindow_, &MainWindow::loadSettings);
-    prefs.loadSettings();
-    prefs.exec();
+    return trayIcon_->menu();
 }
 
 int main(int argc, char *argv[])

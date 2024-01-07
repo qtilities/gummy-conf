@@ -27,17 +27,23 @@
 
 namespace Qtilities {
 namespace Ui {
-class DialogAbout;
+class MainDialog;
 }
-class DialogAbout : public QDialog
+class MainDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit DialogAbout(QWidget* parent = nullptr);
-    ~DialogAbout();
+    explicit MainDialog(QWidget *parent = nullptr);
+    ~MainDialog();
+
+    void loadSettings();
+    void saveSettings();
+    void setIsRunning(bool);
 
 private:
-    Ui::DialogAbout* ui_;
+    void accept() override;
+
+    Ui::MainDialog* ui_;
 };
 } // namespace Qtilities

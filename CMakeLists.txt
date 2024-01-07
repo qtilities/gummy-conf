@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
-project(Sqeleton
-    VERSION 0.1.1
+project(GummyConf
+    VERSION 0.1.0
     LANGUAGES CXX
 )
 set(CMAKE_CXX_STANDARD 17)
@@ -10,6 +10,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Qt
 #===============================================================================
 option(PROJECT_TRANSLATIONS_UPDATE "Update source translations [default: OFF]" OFF)
+set(PROJECT_TRANSLATION_TEST_ENABLED 0 CACHE STRING "Whether to enable translation testing [default: 0]")
+set(PROJECT_TRANSLATION_TEST "it" CACHE STRING "Country code of language to test in IDE [default: it]")
 set(PROJECT_QT_VERSION 5 CACHE STRING "Qt version to use [default: 5]")
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -23,22 +25,21 @@ find_package(Qtilitools REQUIRED)
 set(PROJECT_SOURCES
     src/application.hpp
     src/application.cpp
-    src/litebutton.hpp
-    src/litebutton.cpp
     src/dialogabout.hpp
     src/dialogabout.cpp
-    src/dialogprefs.hpp
-    src/dialogprefs.cpp
-    src/mainwindow.hpp
-    src/mainwindow.cpp
+    src/gummyd.hpp
+    src/gummyd.cpp
+    src/maindialog.hpp
+    src/maindialog.cpp
     src/qtilities.hpp
     src/settings.hpp
     src/settings.cpp
+    src/systemtrayicon.hpp
+    src/systemtrayicon.cpp
 )
 set(PROJECT_UI_FILES
     src/dialogabout.ui
-    src/dialogprefs.ui
-    src/mainwindow.ui
+    src/maindialog.ui
 )
 set(PROJECT_OTHER_FILES
     .github/workflows/build.yml
@@ -48,8 +49,8 @@ set(PROJECT_OTHER_FILES
     .gitignore
     README.md
 )
-source_group("Other Files" FILES ${PROJECT_OTHER_FILES})
-source_group("UI Files" FILES ${PROJECT_UI_FILES})
+source_group("" FILES ${PROJECT_SOURCES})
+source_group("Misc" FILES ${PROJECT_OTHER_FILES})
 #===============================================================================
 # Resources
 #===============================================================================
@@ -90,6 +91,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PROJECT_DATA_DIR="${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT_ID}"
     PROJECT_ICON_NAME="${PROJECT_ICON_FILE_NAME}"
     PROJECT_ICON_SYSTEM_PATH="${PROJECT_ICON_FILE_PATH}/${PROJECT_ICON_FILE_NAME}"
+    PROJECT_TRANSLATION_TEST="${PROJECT_TRANSLATION_TEST}"
+    PROJECT_TRANSLATION_TEST_ENABLED=${PROJECT_TRANSLATION_TEST_ENABLED}
 )
 #===============================================================================
 # Install application
