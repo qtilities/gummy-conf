@@ -12,7 +12,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 option(PROJECT_TRANSLATIONS_UPDATE "Update source translations [default: OFF]" OFF)
 set(PROJECT_TRANSLATION_TEST_ENABLED 0 CACHE STRING "Whether to enable translation testing [default: 0]")
 set(PROJECT_TRANSLATION_TEST "it" CACHE STRING "Country code of language to test in IDE [default: it]")
-set(PROJECT_QT_VERSION 5 CACHE STRING "Qt version to use [default: 5]")
+set(PROJECT_QT_VERSION 6 CACHE STRING "Qt version to use [default: 6]")
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -50,7 +50,7 @@ set(PROJECT_OTHER_FILES
     README.md
 )
 source_group("" FILES ${PROJECT_SOURCES})
-source_group("Misc" FILES ${PROJECT_OTHER_FILES})
+source_group("" FILES ${PROJECT_OTHER_FILES})
 #===============================================================================
 # Resources
 #===============================================================================

@@ -45,6 +45,7 @@ Qtilities::Application::Application(int argc, char *argv[])
     setApplicationDisplayName(APPLICATION_NAME);
     setOrganizationName(ORGANIZATION_NAME);
     setOrganizationDomain(ORGANIZATION_DOMAIN);
+    setDesktopFileName(PROJECT_APPSTREAM_ID);
 
     setQuitOnLastWindowClosed(false);
 
