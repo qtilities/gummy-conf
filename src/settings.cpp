@@ -64,6 +64,7 @@ void Qtilities::Settings::load()
     size_      = settings.value(QSL("Size"),      Default::size).toSize();
     timeStart_ = settings.value(QSL("TimeStart"), Default::timeStart).toTime();
     timeEnd_   = settings.value(QSL("TimeStop"),  Default::timeEnd).toTime();
+    settings.endGroup();
 }
 
 void Qtilities::Settings::save()
